@@ -109,7 +109,7 @@ def dataDownloader(currentTime):
     return data
 
 
-time = datetime.datetime.strptime('2017-06-01 23:32:00', '%Y-%m-%d %H:%M:%S')
+# time = datetime.datetime.strptime('2017-06-01 23:32:00', '%Y-%m-%d %H:%M:%S')
 
 if __name__ == '__main__':
 
