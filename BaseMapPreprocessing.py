@@ -18,14 +18,14 @@ def get_segment_sequence(I81N_Segment_SpatialJoin):
     ini_end_lat = I81N_Segment_SpatialJoin.loc[~I81N_Segment_SpatialJoin['StartLat'].isin(I81N_Segment_SpatialJoin['EndLat']), 'EndLat'].tolist()[0]
     ini_end_long = I81N_Segment_SpatialJoin.loc[~I81N_Segment_SpatialJoin['StartLat'].isin(I81N_Segment_SpatialJoin['EndLat']), 'EndLong'].tolist()[0]
 
-    test.append(I81N_Segment_SpatialJoin[~I81N_Segment_SpatialJoin['StartLat'].isin(I81N_Segment_SpatialJoin['EndLat'])])
+    test.append(I81N_Segment_SpatialJoin.loc[~I81N_Segment_SpatialJoin['StartLat'].isin(I81N_Segment_SpatialJoin['EndLat']), :])
     j = 0
     while j < len(I81N_Segment_SpatialJoin):
         test_start_lat = I81N_Segment_SpatialJoin.loc[j, 'StartLat']
         test_start_long = I81N_Segment_SpatialJoin.loc[j, 'StartLong']
 
         if ini_end_lat == test_start_lat and ini_end_long == test_start_long:
-            test.append(I81N_Segment_SpatialJoin.iloc[j])
+            test.append(I81N_Segment_SpatialJoin.iloc[[j]])
 
             ini_end_lat = I81N_Segment_SpatialJoin.loc[j, 'EndLat']
             ini_end_long = I81N_Segment_SpatialJoin.loc[j, 'EndLong']
@@ -34,8 +34,9 @@ def get_segment_sequence(I81N_Segment_SpatialJoin):
         else:
             j += 1
 
-    test = pd.DataFrame(test)
-
+    # test = pd.DataFrame(test)
+    test = pd.concat(test)
+    test = test.reset_index(drop=True)
     test['sequence'] = test.index + 1
 
     return test
@@ -49,7 +50,7 @@ def get_up_down_ids(test, Selected_detector_configuration):
     for i in range(len(test)):
         mask_id = test.loc[i, 'mask_id']
         print(i)
-        if mask_id == 'nan':
+        if mask_id == ' ':
             continue
         else:
             mask_id = mask_id.split("_")
