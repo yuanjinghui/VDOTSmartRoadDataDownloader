@@ -15,14 +15,16 @@ from io import StringIO, BytesIO
 import requests
 
 
-def dataDownloader(downloadStartTime, currentTime):
+def dataDownloader(downloadStartTime, downloadEndTime):
     # get the end download time
-    downloadEndTime = currentTime.replace(minute=0)
+    # downloadEndTime = currentTime.replace(minute=0)
 
     # get the datetime range
-    timeRange = pd.date_range(start=downloadStartTime, end=downloadEndTime, freq = 'T').tolist() # Generate time series
+    timeRange = pd.date_range(start=downloadStartTime, end=downloadEndTime, freq='T').tolist()  # Generate time series
 
+    global_year = downloadStartTime.year
     global_month = downloadStartTime.month
+    global_day = downloadStartTime.day
     data = []
     for iterate_time in timeRange:
         start = time.time()
@@ -35,13 +37,17 @@ def dataDownloader(downloadStartTime, currentTime):
         minutes = str(iterate_time)[14:16]
         print(year, month, day, hours, minutes)
 
-        if int(month) > global_month:
+        if int(year) > global_year or int(month) > global_month or int(day) > global_day:
             data = pd.DataFrame(data)
-            data.to_csv('../../../data/yuanjinghui/VDOT_TSS_Data_{}{}.csv'.format(year, month))
+            # convert to two digit string
+            str_month = "{0:0=2d}".format(global_month)
+            str_day = "{0:0=2d}".format(global_day)
+
+            data.to_csv('../../../data/yuanjinghui/VDOT_TSS_Data_{}_{}_{}.csv'.format(global_year, str_month, str_day))
             data = []
 
         else:
-            print('Keep writing VDOT_TSS_Data_{}{}.csv'.format(year, month))
+            print('Keep writing VDOT_TSS_Data_{}{}{}.csv'.format(year, month, day))
 
         try:
             # read xml.gz files
@@ -135,7 +141,9 @@ def dataDownloader(downloadStartTime, currentTime):
                     feature[varName] = features.text
                     # print(features)
                 data.append(feature)
+        global_year = int(year)
         global_month = int(month)
+        global_day = int(day)
 
         stop = time.time()
         print(stop - start)
@@ -153,13 +161,15 @@ if __name__ == '__main__':
 
     # get the start download time
     # downloadStartTime = currentTime - datetime.timedelta(hours=1)
-    downloadStartTime = currentTime - relativedelta(years=3)
-    downloadStartTime = downloadStartTime.replace(day=1)
-    downloadStartTime = downloadStartTime.replace(hour=0)
-    downloadStartTime = downloadStartTime.replace(minute=0)
-    # start from July
-    downloadStartTime = downloadStartTime.replace(month=7)
+    # downloadStartTime = currentTime - relativedelta(years=2)
+    # downloadStartTime = downloadStartTime.replace(day=1)
+    # downloadStartTime = downloadStartTime.replace(hour=0)
+    # downloadStartTime = downloadStartTime.replace(minute=0)
+    # # start from July
+    # downloadStartTime = downloadStartTime.replace(month=1)
+    downloadStartTime = datetime.datetime.strptime('2019-10-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    downloadEndTime = datetime.datetime.strptime('2020-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
 
-    data = dataDownloader(downloadStartTime, currentTime)
+    data = dataDownloader(downloadStartTime, downloadEndTime)
     data.to_csv('../../../data/yuanjinghui/VDOT_TSS_Data.csv')
 
